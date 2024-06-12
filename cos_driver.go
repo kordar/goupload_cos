@@ -1,4 +1,4 @@
-package goupload
+package goupload_cos
 
 import (
 	"context"
