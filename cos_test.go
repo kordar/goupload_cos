@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-var client = goupload_cos.NewCOSClient("www-1257614471", "ap-shanghai", "AKID1wfKxQfxLgBXgonXFwTmsnW8Xjw4ZyS5", "kJiuvhJisshHhvzsXdbKqAa1bAZrv6GT")
+var client = goupload_cos.NewCOSClient("", "", "", "")
 var targetDir = "/Users/mac/Pictures/bucket"
 
 func TestCosUploader_Get(t *testing.T) {
