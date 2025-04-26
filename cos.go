@@ -152,6 +152,7 @@ func (c *CosUploader) List(ctx context.Context, dir string, next interface{}, li
 						"storageClass":  content.StorageClass,
 						"partNumber":    content.PartNumber,
 						"etag":          content.ETag,
+						"filename":      path.Base(content.Key),
 					},
 				})
 				total++
@@ -167,7 +168,9 @@ func (c *CosUploader) List(ctx context.Context, dir string, next interface{}, li
 				Id:       commonPrefix,
 				Path:     commonPrefix,
 				FileType: "dir",
-				Params:   map[string]interface{}{},
+				Params: map[string]interface{}{
+					"filename": path.Base(commonPrefix),
+				},
 			})
 			total++
 			if total >= limit {
@@ -336,22 +339,21 @@ func (c *CosUploader) Tree(ctx context.Context, dir string, next interface{}, li
 					continue
 				}
 				data = append(data, goupload.BucketTreeObject{
-					Item: goupload.BucketObject{
-						Id:           content.Key,
-						Path:         content.Key,
-						LastModified: content.LastModified,
-						Size:         content.Size,
-						FileType:     "file",
-						FileExt:      path.Ext(content.Key),
-						Params: map[string]interface{}{
-							"owner":         content.Owner,
-							"restoreStatus": content.RestoreStatus,
-							"versionId":     content.VersionId,
-							"storageTier":   content.StorageTier,
-							"storageClass":  content.StorageClass,
-							"partNumber":    content.PartNumber,
-							"etag":          content.ETag,
-						},
+					Id:           content.Key,
+					Path:         content.Key,
+					LastModified: content.LastModified,
+					Size:         content.Size,
+					FileType:     "file",
+					FileExt:      path.Ext(content.Key),
+					Params: map[string]interface{}{
+						"owner":         content.Owner,
+						"restoreStatus": content.RestoreStatus,
+						"versionId":     content.VersionId,
+						"storageTier":   content.StorageTier,
+						"storageClass":  content.StorageClass,
+						"partNumber":    content.PartNumber,
+						"etag":          content.ETag,
+						"filename":      path.Base(content.Key),
 					},
 					Children: make([]goupload.BucketTreeObject, 0),
 				})
@@ -366,13 +368,12 @@ func (c *CosUploader) Tree(ctx context.Context, dir string, next interface{}, li
 			}
 			children := c.Tree(ctx, commonPrefix, "", limit, dep+1, maxDep, noleaf, subCount, args...)
 			data = append(data, goupload.BucketTreeObject{
-				Item: goupload.BucketObject{
-					Id:       commonPrefix,
-					Path:     commonPrefix,
-					FileType: "dir",
-					Params: map[string]interface{}{
-						"count": count,
-					},
+				Id:       commonPrefix,
+				Path:     commonPrefix,
+				FileType: "dir",
+				Params: map[string]interface{}{
+					"count":    count,
+					"filename": path.Base(commonPrefix),
 				},
 				Children: children,
 			})
