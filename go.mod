@@ -1,10 +1,9 @@
 module github.com/kordar/goupload_cos
 
-go 1.18
+go 1.21
 
 require (
-	github.com/kordar/gologger v0.0.8
-	github.com/kordar/goupload v0.0.9
+	github.com/kordar/goupload v0.0.10
 	github.com/tencentyun/cos-go-sdk-v5 v0.7.57
 )
 
