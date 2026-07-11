@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"path"
 	"strings"
+	"time"
 
 	"github.com/kordar/goupload"
 	"github.com/tencentyun/cos-go-sdk-v5"
@@ -359,4 +360,42 @@ func (c *CosUploader) Append(ctx context.Context, name string, position int, fd 
 
 func (c *CosUploader) AppendString(ctx context.Context, name string, position int, content string, args ...interface{}) (int, error) {
 	return c.Append(ctx, name, position, strings.NewReader(content), args...)
+}
+
+func (c *CosUploader) Stat(ctx context.Context, name string) (int64, time.Time, error) {
+	resp, err := c.client.Object.Head(ctx, name, nil)
+	if err != nil {
+		return 0, time.Time{}, err
+	}
+	modTime := time.Time{}
+	if raw := resp.Header.Get("Last-Modified"); raw != "" {
+		if parsed, parseErr := time.Parse(time.RFC1123, raw); parseErr == nil {
+			modTime = parsed
+		}
+	}
+	return resp.ContentLength, modTime, nil
+}
+
+func (c *CosUploader) Open(ctx context.Context, name string, opts *goupload.GetOptions) (io.ReadCloser, error) {
+	var opt *cos.ObjectGetOptions
+	if opts != nil {
+		size, _, err := c.Stat(ctx, name)
+		if err != nil {
+			return nil, err
+		}
+		start, end, err := goupload.NormalizeRange(opts, size)
+		if err != nil {
+			return nil, err
+		}
+		if start > 0 || end < size-1 {
+			opt = &cos.ObjectGetOptions{
+				Range: fmt.Sprintf("bytes=%d-%d", start, end),
+			}
+		}
+	}
+	resp, err := c.client.Object.Get(ctx, name, opt)
+	if err != nil {
+		return nil, err
+	}
+	return resp.Body, nil
 }
